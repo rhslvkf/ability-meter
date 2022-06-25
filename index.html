@@ -170,6 +170,8 @@
             for (let i = 0; i < maxPredictions; i++) {
                 statScore += prediction[i].className * prediction[i].probability.toFixed(2);
             }
+            var statRank = getStatRank(statScore.toFixed(0));
+            var rankColor = getRankColor(statRank);
             if (type == 'str') {
                 clearInterval(strScoreInterval);
                 $('#str-score').text(statScore.toFixed(0));
@@ -177,9 +179,9 @@
                 setTimeout(function () {
                     $('#str-score').css('transform', 'scale(1)');
                     setTimeout(function () {
-                        var statRank = getStatRank(statScore.toFixed(0));
                         $('#str-rank').text(statRank);
-                        $('#str-rank').css('color', getRankColor(statRank));
+                        $('#str-rank').css('color', rankColor);
+                        $('#str-rank').css('text-shadow', '0 0 1px #FFF, 0 0 2px #fff, 0 0 3px #fff, 0 0 4px ' + rankColor + ', 0 0 5px ' + rankColor + ', 0 0 6px ' + rankColor);
                         $('#str-rank').removeClass('anim-pulse');
                         setTimeout(function () {
                             $('#str-rank').addClass('anim-pulse');
@@ -193,9 +195,9 @@
                 setTimeout(function () {
                     $('#int-score').css('transform', 'scale(1)');
                     setTimeout(function () {
-                        var statRank = getStatRank(statScore.toFixed(0));
                         $('#int-rank').text(statRank);
                         $('#int-rank').css('color', getRankColor(statRank));
+                        $('#int-rank').css('text-shadow', '0 0 1px #FFF, 0 0 2px #fff, 0 0 3px #fff, 0 0 4px ' + rankColor + ', 0 0 5px ' + rankColor + ', 0 0 6px ' + rankColor);
                         $('#int-rank').removeClass('anim-pulse');
                         setTimeout(function () {
                             $('#int-rank').addClass('anim-pulse');
@@ -212,6 +214,7 @@
                         var statRank = getStatRank(statScore.toFixed(0));
                         $('#char-rank').text(statRank);
                         $('#char-rank').css('color', getRankColor(statRank));
+                        $('#char-rank').css('text-shadow', '0 0 1px #FFF, 0 0 2px #fff, 0 0 3px #fff, 0 0 4px ' + rankColor + ', 0 0 5px ' + rankColor + ', 0 0 6px ' + rankColor);
                         $('#char-rank').removeClass('anim-pulse');
                         setTimeout(function () {
                             $('#char-rank').addClass('anim-pulse');
@@ -431,11 +434,10 @@
                                                     $('#total-score').css('transform', 'scale(1)');
                                                     setTimeout(function () {
                                                         var totalRank = getTotalRank(totalScore);
+                                                        var rankColor = getRankColor(totalRank);
                                                         $('#total-rank').text(totalRank);
-                                                        $('#total-rank').css(
-                                                            'color',
-                                                            getRankColor(totalRank)
-                                                        );
+                                                        $('#total-rank').css('color', rankColor);
+                                                        $('#total-rank').css('text-shadow', '0 0 1px #FFF, 0 0 2px #fff, 0 0 3px #fff, 0 0 4px ' + rankColor + ', 0 0 5px ' + rankColor + ', 0 0 6px ' + rankColor);
                                                         $('#total-rank').removeClass('anim-pulse2');
                                                         setTimeout(function () {
                                                             $('#total-rank').addClass(

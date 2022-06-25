@@ -464,7 +464,6 @@ p {
     font-size: calc(16px + 2.5vh);
     padding-left: 0.5vh;
     font-weight: bold;
-    text-shadow: 2px 2px 2px black;
     position: absolute;
     top: -15%;
     z-index: 999;
