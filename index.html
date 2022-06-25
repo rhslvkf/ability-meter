@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="style.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@300&display=swap" rel="stylesheet">
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+        <script
+            type="text/javascript"
+            src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-62a736112df161da"
+        ></script>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link rel="shortcut icon" href="icon.png">
+        <title>능력치 측정기</title>
+    </head>
+    <body>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+        <script type="text/javascript">
+            // More API functions here:
+            // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+            let model, webcam, labelContainer, maxPredictions;
+
+            // Load the image model and setup the webcam
+            async function init(URL) {
+                const modelURL = URL + 'model.json';
+                const metadataURL = URL + 'metadata.json';
+
+                // load the model and metadata
+                // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+                // or files from your local hard drive
+                // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+            }
+
+            // run the webcam image through the image model
+            async function predict(type) {
+                // predict can take in an image, video or canvas html element
+                var image = document.getElementById('d-none-face-image', false);
+                const prediction = await model.predict(image);
+                var statScore = 0;
+                for (let i = 0; i < maxPredictions; i++) {
+                    statScore += prediction[i].className * prediction[i].probability.toFixed(2);
+                }
+                if (type == 'str') {
+                    clearInterval(strScoreInterval);
+                    $('#str-score').text(statScore.toFixed(0));
+                    $('#str-score').css('transform', 'scale(2)');
+                    setTimeout(function () {
+                        $('#str-score').css('transform', 'scale(1)');
+                        setTimeout(function () {
+                            var statRank = getStatRank(statScore.toFixed(0));
+                            $('#str-rank').text(statRank);
+                            $('#str-rank').css('color', getRankColor(statRank));
+                            $('#str-rank').removeClass('anim-pulse');
+                            setTimeout(function(){
+                                $('#str-rank').addClass('anim-pulse');
+                            }, 100);
+                        }, 200);
+                    }, 400);
+                } else if (type == 'int') {
+                    clearInterval(intScoreInterval);
+                    $('#int-score').text(statScore.toFixed(0));
+                    $('#int-score').css('transform', 'scale(2)');
+                    setTimeout(function () {
+                        $('#int-score').css('transform', 'scale(1)');
+                        setTimeout(function () {
+                            var statRank = getStatRank(statScore.toFixed(0));
+                            $('#int-rank').text(statRank);
+                            $('#int-rank').css('color', getRankColor(statRank));
+                            $('#int-rank').removeClass('anim-pulse');
+                            setTimeout(function(){
+                                $('#int-rank').addClass('anim-pulse');
+                            }, 100);
+                        }, 200);
+                    }, 400);
+                } else if (type == 'char') {
+                    clearInterval(charScoreInterval);
+                    $('#char-score').text(statScore.toFixed(0));
+                    $('#char-score').css('transform', 'scale(2)');
+                    setTimeout(function () {
+                        $('#char-score').css('transform', 'scale(1)');
+                        setTimeout(function () {
+                            var statRank = getStatRank(statScore.toFixed(0));
+                            $('#char-rank').text(statRank);
+                            $('#char-rank').css('color', getRankColor(statRank));
+                            $('#char-rank').removeClass('anim-pulse');
+                            setTimeout(function(){
+                                $('#char-rank').addClass('anim-pulse');
+                            }, 100);
+                        }, 200);
+                    }, 400);
+                }
+            }
+
+            function getRankColor(rank) {
+                if (rank == 'SSS') return 'gold';
+                if (rank == 'SS') return 'magenta';
+                if (rank == 'S') return 'red';
+                if (rank == 'A') return 'blue';
+                if (rank == 'B') return 'green';
+                if (rank == 'C') return 'black';
+                if (rank == 'D') return 'gray';
+            }
+            function getStatRank(score) {
+                if (score >= 0 && score <= 39) return 'D';
+                if (score >= 40 && score <= 59) return 'C';
+                if (score >= 60 && score <= 79) return 'B';
+                if (score >= 80 && score <= 89) return 'A';
+                if (score >= 90 && score <= 94) return 'S';
+                if (score >= 95 && score <= 97) return 'SS';
+                if (score >= 98 && score <= 100) return 'SSS';
+            }
+            function getTotalRank(score) {
+                if (score >= 0 && score <= 118) return 'D';
+                if (score >= 119 && score <= 178) return 'C';
+                if (score >= 179 && score <= 238) return 'B';
+                if (score >= 239 && score <= 268) return 'A';
+                if (score >= 269 && score <= 283) return 'S';
+                if (score >= 284 && score <= 292) return 'SS';
+                if (score >= 293 && score <= 300) return 'SSS';
+            }
+        </script>
+
+        <h1>
+            능력치 측정기
+        </h1>
+        <h2>
+            AI가 보는 당신의 능력치는?
+        </h2>
+        <input type="file" id="imageUpload" accept=".png, .jpg, .jpeg" style="display: none;" />
+        <div class="card-empty" id="imageUploadCard">
+            <svg class="user-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+                <path
+                    d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 128c39.77 0 72 32.24 72 72S295.8 272 256 272c-39.76 0-72-32.24-72-72S216.2 128 256 128zM256 448c-52.93 0-100.9-21.53-135.7-56.29C136.5 349.9 176.5 320 224 320h64c47.54 0 87.54 29.88 103.7 71.71C356.9 426.5 308.9 448 256 448z"
+                />
+            </svg>
+        </div>
+
+        <main id="app" style="display: none;">
+            <section class="cards">
+                <div class="card animated" id="face-image">
+                    <div class="stat-top">
+                        <div id="total-rank" class="rank-stamp"></div>
+                        <div style="display: inline-block;"></div>
+                        <div id="total-score"></div>
+                    </div>
+                    <div class="stat-div">
+                        <table class="stat-table">
+                            <tbody>
+                                <tr class="stat-score">
+                                    <td id="str-score"></td>
+                                    <td id="int-score"></td>
+                                    <td id="char-score"></td>
+                                </tr>
+                                <tr class="stat-desc">
+                                    <td>
+                                        <div id="str-rank" class="rank-stamp"></div>
+                                        무력
+                                    </td>
+                                    <td>
+                                        <div id="int-rank" class="rank-stamp"></div>
+                                        지력
+                                    </td>
+                                    <td>
+                                        <div id="char-rank" class="rank-stamp"></div>
+                                        매력
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <img id="d-none-face-image" src="" style="display: none;" />
+            <!-- Go to www.addthis.com/dashboard to customize your tools -->
+            <button id="retryBtn" class="custom-btn btn-15">다른 사진으로 재시도</button>
+            <div class="addthis_inline_share_toolbox_gzld"></div>
+        </main>
+    </body>
+    <div id="disqus_thread"></div>
+    <script>
+        /**
+         *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+         *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+        /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+        (function () {
+            // DON'T EDIT BELOW THIS LINE
+            var d = document,
+                s = d.createElement('script');
+            s.src = 'https://ability-meter.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript
+        >Please enable JavaScript to view the
+        <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript
+    >
+    <script
+        src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+        integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI="
+        crossorigin="anonymous"
+    ></script>
+    <script>
+        var totalScoreInterval;
+        var strScoreInterval;
+        var intScoreInterval;
+        var charScoreInterval;
+        var audio_reveal_face = new Audio(
+            'https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-61905/zapsplat_fantasy_magic_glissando_90s_style_dreamy_ascend_reveal_002_64939.mp3'
+        );
+
+        function runRandomNum() {
+            totalScoreInterval = setInterval(function () {
+                $('#total-score').text(Math.floor(Math.random() * 300));
+            }, 100);
+            strScoreInterval = setInterval(function () {
+                $('#str-score').text(Math.floor(Math.random() * 100));
+            }, 100);
+            intScoreInterval = setInterval(function () {
+                $('#int-score').text(Math.floor(Math.random() * 100));
+            }, 100);
+            charScoreInterval = setInterval(function () {
+                $('#char-score').text(Math.floor(Math.random() * 100));
+            }, 100);
+        }
+
+        $(document).ready(function () {
+            $('#retryBtn').on('click', function () {
+                $('#imageUpload').val('');
+                $('#app').hide();
+                $('#imageUploadCard').show();
+                $('#str-rank').text('');
+                $('#int-rank').text('');
+                $('#char-rank').text('');
+                $('#total-rank').text('');
+                runRandomNum();
+            });
+
+            runRandomNum();
+
+            $('#imageUploadCard').on('click', function () {
+                $('#imageUpload').click();
+            });
+
+            // 이벤트를 바인딩해서 input에 파일이 올라올때 (input에 change를 트리거할때) 위의 함수를 this context로 실행합니다.
+            $('#imageUpload').change(function () {
+                readURL(this);
+            });
+
+            /*
+
+  using 
+    - an animated gif of sparkles.
+    - an animated gradient as a holo effect.
+    - color-dodge mix blend mode
+  
+*/
+            var x;
+            var $cards = $('.card');
+            var $style = $('.hover');
+
+            $cards
+                .on('mousemove touchmove', function (e) {
+                    // normalise touch/mouse
+                    var pos = [e.offsetX, e.offsetY];
+                    e.preventDefault();
+                    if (e.type === 'touchmove') {
+                        pos = [e.touches[0].clientX, e.touches[0].clientY];
+                    }
+                    var $card = $(this);
+                    // math for mouse position
+                    var l = pos[0];
+                    var t = pos[1];
+                    var h = $card.height();
+                    var w = $card.width();
+                    var px = Math.abs(Math.floor((100 / w) * l) - 100);
+                    var py = Math.abs(Math.floor((100 / h) * t) - 100);
+                    var pa = 50 - px + (50 - py);
+                    // math for gradient / background positions
+                    var lp = 50 + (px - 50) / 1.5;
+                    var tp = 50 + (py - 50) / 1.5;
+                    var px_spark = 50 + (px - 50) / 7;
+                    var py_spark = 50 + (py - 50) / 7;
+                    var p_opc = 20 + Math.abs(pa) * 1.5;
+                    var ty = ((tp - 50) / 2) * -1;
+                    var tx = ((lp - 50) / 1.5) * 0.5;
+                    // css to apply for active card
+                    var grad_pos = `background-position: ${lp}% ${tp}%;`;
+                    var sprk_pos = `background-position: ${px_spark}% ${py_spark}%;`;
+                    var opc = `opacity: ${p_opc / 100};`;
+                    var tf = `transform: rotateX(${ty}deg) rotateY(${tx}deg)`;
+                    // need to use a <style> tag for psuedo elements
+                    var style = `
+      .card:hover:before { ${grad_pos} }  /* gradient */
+      .card:hover:after { ${sprk_pos} ${opc} }   /* sparkles */ 
+    `;
+                    // set / apply css class and style
+                    $cards.removeClass('active');
+                    $card.removeClass('animated');
+                    $card.attr('style', tf);
+                    $style.html(style);
+                    if (e.type === 'touchmove') {
+                        return false;
+                    }
+                    clearTimeout(x);
+                })
+                .on('mouseout touchend touchcancel', function () {
+                    // remove css, apply custom animation on end
+                    var $card = $(this);
+                    $style.html('');
+                    $card.removeAttr('style');
+                    x = setTimeout(function () {
+                        $card.addClass('animated');
+                    }, 2500);
+                });
+        });
+
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    document.documentElement.style.setProperty(
+                        '--facefront',
+                        'url(' + e.target.result + ')'
+                    );
+                    $('#d-none-face-image').attr('src', e.target.result);
+                };
+
+                reader.readAsDataURL(input.files[0]);
+
+                audio_reveal_face.loop = true;
+                audio_reveal_face.volume = 1;
+                audio_reveal_face.play();
+
+                init('https://teachablemachine.withgoogle.com/models/8LyRzecy1/').then(() => {
+                    predict('str').then(() => {
+                        init('https://teachablemachine.withgoogle.com/models/VNHAPL5vb/').then(
+                            () => {
+                                predict('int').then(() => {
+                                    init(
+                                        'https://teachablemachine.withgoogle.com/models/moCBYfVTx/'
+                                    ).then(() => {
+                                        predict('char').then(() => {
+                                            setTimeout(() => {
+                                                clearInterval(totalScoreInterval);
+                                                var totalScore =
+                                                    Number($('#str-score').text()) +
+                                                    Number($('#int-score').text()) +
+                                                    Number($('#char-score').text());
+                                                audio_reveal_face.pause();
+                                                $('#total-score').text(totalScore);
+                                                $('#total-score').css('transform', 'scale(2)');
+                                                setTimeout(function () {
+                                                    $('#total-score').css('transform', 'scale(1)');
+                                                    setTimeout(function () {
+                                                        var totalRank = getTotalRank(totalScore);
+                                                        $('#total-rank').text(totalRank);
+                                                        $('#total-rank').css(
+                                                            'color',
+                                                            getRankColor(totalRank)
+                                                        );
+                                                        $('#total-rank').removeClass('anim-pulse2');
+                                                        setTimeout(function(){
+                                                            $('#total-rank').addClass('anim-pulse2');
+                                                        }, 100);
+                                                    }, 500);
+                                                }, 600);
+                                            }, 1500);
+                                        });
+                                    });
+                                });
+                            }
+                        );
+                    });
+                });
+
+                $('#imageUploadCard').hide();
+                $('#app').show();
+            }
+        }
+    </script>
+</html>
+
+<!-- Copyright (c) 2022 by Simon Goellner (https://codepen.io/simeydotme/pen/PrQKgo)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+
+<!-- Copyright (c) 2022 by Gayane (https://codepen.io/gayane-gasparyan/pen/jOmaBQK)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
