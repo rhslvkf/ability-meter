@@ -581,3 +581,8 @@ p {
 .btn-15:active {
     top: 2px;
 }
+
+.kakao_ad_area{
+    width: 320px !important;
+    height: 100px !important;
+}

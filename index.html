@@ -2,10 +2,13 @@
 <html>
     <head>
         <link rel="stylesheet" href="style.css" />
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="canonical" href="https://ability-meter.tk">
-        <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@300&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="canonical" href="https://ability-meter.tk" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Dongle:wght@300&display=swap"
+            rel="stylesheet"
+        />
         <!-- Go to www.addthis.com/dashboard to customize your tools -->
         <script
             type="text/javascript"
@@ -14,135 +17,34 @@
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQ5ZHWJQ5N"></script>
         <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
 
-          gtag('config', 'G-NQ5ZHWJQ5N');
+            gtag('config', 'G-NQ5ZHWJQ5N');
         </script>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8843457940870268" crossorigin="anonymous"></script>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8843457940870268"
+            crossorigin="anonymous"
+        ></script>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
         <meta name="naver-site-verification" content="54ff9e8022705b5c0c180e854ea2402d1cf4b4ee" />
-        <meta name="google-site-verification" content="OEpuPQ5md1T7axXuQMFxCjRGoESsW7IcFhsxXZasevQ" />
+        <meta
+            name="google-site-verification"
+            content="OEpuPQ5md1T7axXuQMFxCjRGoESsW7IcFhsxXZasevQ"
+        />
         <meta name="description" content="AI가 당신의 얼굴 사진으로 능력치를 측정하여 줍니다." />
         <meta property="og:title" content="능력치 측정기" />
         <meta property="og:description" content="AI가 측정하는 당신의 능력치는?" />
-        <link rel="shortcut icon" href="icon.png">
+        <link rel="shortcut icon" href="icon.png" />
         <title>능력치 측정기</title>
     </head>
     <body>
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
-        <script type="text/javascript">
-            // More API functions here:
-            // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-
-            let model, webcam, labelContainer, maxPredictions;
-
-            // Load the image model and setup the webcam
-            async function init(URL) {
-                const modelURL = URL + 'model.json';
-                const metadataURL = URL + 'metadata.json';
-
-                // load the model and metadata
-                // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
-                // or files from your local hard drive
-                // Note: the pose library adds "tmImage" object to your window (window.tmImage)
-                model = await tmImage.load(modelURL, metadataURL);
-                maxPredictions = model.getTotalClasses();
-            }
-
-            // run the webcam image through the image model
-            async function predict(type) {
-                // predict can take in an image, video or canvas html element
-                var image = document.getElementById('d-none-face-image', false);
-                const prediction = await model.predict(image);
-                var statScore = 0;
-                for (let i = 0; i < maxPredictions; i++) {
-                    statScore += prediction[i].className * prediction[i].probability.toFixed(2);
-                }
-                if (type == 'str') {
-                    clearInterval(strScoreInterval);
-                    $('#str-score').text(statScore.toFixed(0));
-                    $('#str-score').css('transform', 'scale(2)');
-                    setTimeout(function () {
-                        $('#str-score').css('transform', 'scale(1)');
-                        setTimeout(function () {
-                            var statRank = getStatRank(statScore.toFixed(0));
-                            $('#str-rank').text(statRank);
-                            $('#str-rank').css('color', getRankColor(statRank));
-                            $('#str-rank').removeClass('anim-pulse');
-                            setTimeout(function(){
-                                $('#str-rank').addClass('anim-pulse');
-                            }, 100);
-                        }, 200);
-                    }, 400);
-                } else if (type == 'int') {
-                    clearInterval(intScoreInterval);
-                    $('#int-score').text(statScore.toFixed(0));
-                    $('#int-score').css('transform', 'scale(2)');
-                    setTimeout(function () {
-                        $('#int-score').css('transform', 'scale(1)');
-                        setTimeout(function () {
-                            var statRank = getStatRank(statScore.toFixed(0));
-                            $('#int-rank').text(statRank);
-                            $('#int-rank').css('color', getRankColor(statRank));
-                            $('#int-rank').removeClass('anim-pulse');
-                            setTimeout(function(){
-                                $('#int-rank').addClass('anim-pulse');
-                            }, 100);
-                        }, 200);
-                    }, 400);
-                } else if (type == 'char') {
-                    clearInterval(charScoreInterval);
-                    $('#char-score').text(statScore.toFixed(0));
-                    $('#char-score').css('transform', 'scale(2)');
-                    setTimeout(function () {
-                        $('#char-score').css('transform', 'scale(1)');
-                        setTimeout(function () {
-                            var statRank = getStatRank(statScore.toFixed(0));
-                            $('#char-rank').text(statRank);
-                            $('#char-rank').css('color', getRankColor(statRank));
-                            $('#char-rank').removeClass('anim-pulse');
-                            setTimeout(function(){
-                                $('#char-rank').addClass('anim-pulse');
-                            }, 100);
-                        }, 200);
-                    }, 400);
-                }
-            }
-
-            function getRankColor(rank) {
-                if (rank == 'SSS') return 'gold';
-                if (rank == 'SS') return 'magenta';
-                if (rank == 'S') return 'red';
-                if (rank == 'A') return 'blue';
-                if (rank == 'B') return 'green';
-                if (rank == 'C') return 'black';
-                if (rank == 'D') return 'gray';
-            }
-            function getStatRank(score) {
-                if (score >= 0 && score <= 39) return 'D';
-                if (score >= 40 && score <= 59) return 'C';
-                if (score >= 60 && score <= 79) return 'B';
-                if (score >= 80 && score <= 89) return 'A';
-                if (score >= 90 && score <= 94) return 'S';
-                if (score >= 95 && score <= 97) return 'SS';
-                if (score >= 98 && score <= 100) return 'SSS';
-            }
-            function getTotalRank(score) {
-                if (score >= 0 && score <= 118) return 'D';
-                if (score >= 119 && score <= 178) return 'C';
-                if (score >= 179 && score <= 238) return 'B';
-                if (score >= 239 && score <= 268) return 'A';
-                if (score >= 269 && score <= 283) return 'S';
-                if (score >= 284 && score <= 292) return 'SS';
-                if (score >= 293 && score <= 300) return 'SSS';
-            }
-        </script>
-
         <h1>
             능력치 측정기
         </h1>
@@ -199,8 +101,154 @@
             <button id="retryBtn" class="custom-btn btn-15">다른 사진으로 재시도</button>
             <div class="addthis_inline_share_toolbox_gzld"></div>
         </main>
+
+        <ins
+            class="kakao_ad_area"
+            style="display: none;"
+            data-ad-unit="DAN-AyIRJ1O7qw0viTL8"
+            data-ad-width="320"
+            data-ad-height="100"
+        ></ins>
+        <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+
+        <ins
+            class="kakao_ad_area"
+            style="display: none;"
+            data-ad-unit="DAN-2xxAEUqLpbCosziC"
+            data-ad-width="320"
+            data-ad-height="100"
+        ></ins>
+        <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+
+        <ins
+            class="kakao_ad_area"
+            style="display: none;"
+            data-ad-unit="DAN-eUE042b3MlclwFtL"
+            data-ad-width="320"
+            data-ad-height="100"
+        ></ins>
+        <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+
+        <ins
+            class="kakao_ad_area"
+            style="display: none;"
+            data-ad-unit="DAN-abXaRD5mvbUBPl9A"
+            data-ad-width="320"
+            data-ad-height="100"
+        ></ins>
+        <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
     </body>
+
     <div id="disqus_thread"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+    <script type="text/javascript">
+        // More API functions here:
+        // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+        let model, webcam, labelContainer, maxPredictions;
+
+        // Load the image model and setup the webcam
+        async function init(URL) {
+            const modelURL = URL + 'model.json';
+            const metadataURL = URL + 'metadata.json';
+
+            // load the model and metadata
+            // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+            // or files from your local hard drive
+            // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
+        }
+
+        // run the webcam image through the image model
+        async function predict(type) {
+            // predict can take in an image, video or canvas html element
+            var image = document.getElementById('d-none-face-image', false);
+            const prediction = await model.predict(image);
+            var statScore = 0;
+            for (let i = 0; i < maxPredictions; i++) {
+                statScore += prediction[i].className * prediction[i].probability.toFixed(2);
+            }
+            if (type == 'str') {
+                clearInterval(strScoreInterval);
+                $('#str-score').text(statScore.toFixed(0));
+                $('#str-score').css('transform', 'scale(2)');
+                setTimeout(function () {
+                    $('#str-score').css('transform', 'scale(1)');
+                    setTimeout(function () {
+                        var statRank = getStatRank(statScore.toFixed(0));
+                        $('#str-rank').text(statRank);
+                        $('#str-rank').css('color', getRankColor(statRank));
+                        $('#str-rank').removeClass('anim-pulse');
+                        setTimeout(function () {
+                            $('#str-rank').addClass('anim-pulse');
+                        }, 100);
+                    }, 200);
+                }, 400);
+            } else if (type == 'int') {
+                clearInterval(intScoreInterval);
+                $('#int-score').text(statScore.toFixed(0));
+                $('#int-score').css('transform', 'scale(2)');
+                setTimeout(function () {
+                    $('#int-score').css('transform', 'scale(1)');
+                    setTimeout(function () {
+                        var statRank = getStatRank(statScore.toFixed(0));
+                        $('#int-rank').text(statRank);
+                        $('#int-rank').css('color', getRankColor(statRank));
+                        $('#int-rank').removeClass('anim-pulse');
+                        setTimeout(function () {
+                            $('#int-rank').addClass('anim-pulse');
+                        }, 100);
+                    }, 200);
+                }, 400);
+            } else if (type == 'char') {
+                clearInterval(charScoreInterval);
+                $('#char-score').text(statScore.toFixed(0));
+                $('#char-score').css('transform', 'scale(2)');
+                setTimeout(function () {
+                    $('#char-score').css('transform', 'scale(1)');
+                    setTimeout(function () {
+                        var statRank = getStatRank(statScore.toFixed(0));
+                        $('#char-rank').text(statRank);
+                        $('#char-rank').css('color', getRankColor(statRank));
+                        $('#char-rank').removeClass('anim-pulse');
+                        setTimeout(function () {
+                            $('#char-rank').addClass('anim-pulse');
+                        }, 100);
+                    }, 200);
+                }, 400);
+            }
+        }
+
+        function getRankColor(rank) {
+            if (rank == 'SSS') return 'gold';
+            if (rank == 'SS') return 'magenta';
+            if (rank == 'S') return 'red';
+            if (rank == 'A') return 'blue';
+            if (rank == 'B') return 'green';
+            if (rank == 'C') return 'black';
+            if (rank == 'D') return 'gray';
+        }
+        function getStatRank(score) {
+            if (score >= 0 && score <= 39) return 'D';
+            if (score >= 40 && score <= 59) return 'C';
+            if (score >= 60 && score <= 79) return 'B';
+            if (score >= 80 && score <= 89) return 'A';
+            if (score >= 90 && score <= 94) return 'S';
+            if (score >= 95 && score <= 97) return 'SS';
+            if (score >= 98 && score <= 100) return 'SSS';
+        }
+        function getTotalRank(score) {
+            if (score >= 0 && score <= 118) return 'D';
+            if (score >= 119 && score <= 178) return 'C';
+            if (score >= 179 && score <= 238) return 'B';
+            if (score >= 239 && score <= 268) return 'A';
+            if (score >= 269 && score <= 283) return 'S';
+            if (score >= 284 && score <= 292) return 'SS';
+            if (score >= 293 && score <= 300) return 'SSS';
+        }
+    </script>
     <script>
         /**
          *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
@@ -377,7 +425,6 @@
                                                     Number($('#str-score').text()) +
                                                     Number($('#int-score').text()) +
                                                     Number($('#char-score').text());
-                                                audio_reveal_face.pause();
                                                 $('#total-score').text(totalScore);
                                                 $('#total-score').css('transform', 'scale(2)');
                                                 setTimeout(function () {
@@ -390,8 +437,13 @@
                                                             getRankColor(totalRank)
                                                         );
                                                         $('#total-rank').removeClass('anim-pulse2');
-                                                        setTimeout(function(){
-                                                            $('#total-rank').addClass('anim-pulse2');
+                                                        setTimeout(function () {
+                                                            $('#total-rank').addClass(
+                                                                'anim-pulse2'
+                                                            );
+                                                            setTimeout(function () {
+                                                                audio_reveal_face.pause();
+                                                            }, 2000);
                                                         }, 100);
                                                     }, 500);
                                                 }, 600);
