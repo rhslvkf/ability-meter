@@ -137,11 +137,16 @@
             data-ad-height="100"
         ></ins>
         <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+        
+        <canvas id="myCanvas" width="50" height="60" style="border:1px solid #d3d3d3; display: none;">
+        Your browser does not support the HTML5 canvas tag.
+        </canvas>
     </body>
 
     <div id="disqus_thread"></div>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+    <script src="face-api.js"></script>
     <script type="text/javascript">
         // More API functions here:
         // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
@@ -413,55 +418,98 @@
                 audio_reveal_face.volume = 1;
                 audio_reveal_face.play();
 
-                init('https://teachablemachine.withgoogle.com/models/8LyRzecy1/').then(() => {
-                    predict('str').then(() => {
-                        init('https://teachablemachine.withgoogle.com/models/VNHAPL5vb/').then(
-                            () => {
-                                predict('int').then(() => {
-                                    init(
-                                        'https://teachablemachine.withgoogle.com/models/moCBYfVTx/'
-                                    ).then(() => {
-                                        predict('char').then(() => {
-                                            setTimeout(() => {
-                                                clearInterval(totalScoreInterval);
-                                                var totalScore =
-                                                    Number($('#str-score').text()) +
-                                                    Number($('#int-score').text()) +
-                                                    Number($('#char-score').text());
-                                                $('#total-score').text(totalScore);
-                                                $('#total-score').css('transform', 'scale(2)');
-                                                setTimeout(function () {
-                                                    $('#total-score').css('transform', 'scale(1)');
-                                                    setTimeout(function () {
-                                                        var totalRank = getTotalRank(totalScore);
-                                                        var rankColor = getRankColor(totalRank);
-                                                        $('#total-rank').text(totalRank);
-                                                        $('#total-rank').css('color', rankColor);
-                                                        $('#total-rank').css('text-shadow', '0 0 1px #FFF, 0 0 2px #fff, 0 0 3px #fff, 0 0 4px ' + rankColor + ', 0 0 5px ' + rankColor + ', 0 0 6px ' + rankColor);
-                                                        $('#total-rank').removeClass('anim-pulse2');
-                                                        setTimeout(function () {
-                                                            $('#total-rank').addClass(
-                                                                'anim-pulse2'
-                                                            );
-                                                            setTimeout(function () {
-                                                                audio_reveal_face.pause();
-                                                            }, 2000);
-                                                        }, 100);
-                                                    }, 500);
-                                                }, 600);
-                                            }, 1500);
-                                        });
-                                    });
-                                });
-                            }
-                        );
-                    });
-                });
-
                 $('#imageUploadCard').hide();
                 $('#app').show();
             }
         }
+        
+        function score_measure(gender){
+            init(gender == 'female' ? 'https://teachablemachine.withgoogle.com/models/8LyRzecy1/' : 'https://teachablemachine.withgoogle.com/models/WXPIwgbIR/').then(() => {
+                predict('str').then(() => {
+                    init(gender == 'female' ? 'https://teachablemachine.withgoogle.com/models/VNHAPL5vb/' : 'https://teachablemachine.withgoogle.com/models/jQXcOtmo9/').then(
+                        () => {
+                            predict('int').then(() => {
+                                init(
+                                    gender == 'female' ? 'https://teachablemachine.withgoogle.com/models/moCBYfVTx/' : 'https://teachablemachine.withgoogle.com/models/kEOfcKV9t/'
+                                ).then(() => {
+                                    predict('char').then(() => {
+                                        setTimeout(() => {
+                                            clearInterval(totalScoreInterval);
+                                            var totalScore =
+                                                Number($('#str-score').text()) +
+                                                Number($('#int-score').text()) +
+                                                Number($('#char-score').text());
+                                            $('#total-score').text(totalScore);
+                                            $('#total-score').css('transform', 'scale(2)');
+                                            setTimeout(function () {
+                                                $('#total-score').css('transform', 'scale(1)');
+                                                setTimeout(function () {
+                                                    var totalRank = getTotalRank(totalScore);
+                                                    var rankColor = getRankColor(totalRank);
+                                                    $('#total-rank').text(totalRank);
+                                                    $('#total-rank').css('color', rankColor);
+                                                    $('#total-rank').css('text-shadow', '0 0 1px #FFF, 0 0 2px #fff, 0 0 3px #fff, 0 0 4px ' + rankColor + ', 0 0 5px ' + rankColor + ', 0 0 6px ' + rankColor);
+                                                    $('#total-rank').removeClass('anim-pulse2');
+                                                    setTimeout(function () {
+                                                        $('#total-rank').addClass(
+                                                            'anim-pulse2'
+                                                        );
+                                                        setTimeout(function () {
+                                                            audio_reveal_face.pause();
+                                                        }, 2000);
+                                                    }, 100);
+                                                }, 500);
+                                            }, 600);
+                                        }, 1500);
+                                    });
+                                });
+                            });
+                        }
+                    );
+                });
+            });
+        }
+    </script>
+    <script>
+    const imageUpload = document.getElementById('imageUpload');
+
+    Promise.all([
+        faceapi.nets.faceRecognitionNet.loadFromUri('./models'),
+        faceapi.nets.faceLandmark68Net.loadFromUri('./models'),
+        faceapi.nets.ssdMobilenetv1.loadFromUri('./models'),
+        faceapi.nets.ageGenderNet.loadFromUri('./models'),
+    ]).then(detectFace);
+
+    function detectFace() {
+        imageUpload.addEventListener('change', async () => {
+            const image = await faceapi.bufferToImage(imageUpload.files[0]);
+            const displaySize = { width: image.width, height: image.height };
+            
+            // 사진에서 얼굴을 식별한다.
+            const detections = await faceapi
+                .detectAllFaces(image)
+                .withFaceLandmarks()
+                .withFaceDescriptors()
+                .withAgeAndGender();
+            
+            if(detections[0] === undefined){
+                score_measure(detections[0].gender);
+                return;
+            }
+            
+            var c = document.getElementById("myCanvas");
+            var landmarks = detections[0].landmarks;
+            c.width = landmarks._imgDims._width * 1.2;
+            c.height = landmarks._imgDims._height * 1.2;
+            var ctx = c.getContext("2d");
+            var img = document.getElementById("d-none-face-image");
+            ctx.drawImage(img, landmarks._shift._x * -1 + (landmarks._imgDims._width * 0.1), landmarks._shift._y * -1 + (landmarks._imgDims._height * 0.1), img.width, img.height);
+            
+            $('#d-none-face-image').prop('src', c.toDataURL());
+            
+            score_measure(detections[0].gender);
+        });
+    }
     </script>
 </html>
 
